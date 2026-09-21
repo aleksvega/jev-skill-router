@@ -1,0 +1,28 @@
+{
+  "name": "jev-skill-router",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "jev-skill-router": "./cli.mjs"
+  },
+  "description": "Jev-powered skill router & security auditor for any AI agent: analyzes each request, tells the model WHICH skill to load, and scans skill libraries for prompt injection / dangerous commands.",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "jev",
+    "system-one",
+    "skills",
+    "router",
+    "agent",
+    "prompt-injection",
+    "security",
+    "openrouter"
+  ],
+  "license": "MIT",
+  "files": [
+    "cli.mjs",
+    "README.md",
+    "LICENSE"
+  ]
+}
