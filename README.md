@@ -1,5 +1,10 @@
 # jev-skill-router
 
+[![npm version](https://img.shields.io/npm/v/jev-skill-router.svg)](https://www.npmjs.com/package/jev-skill-router)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen.svg)](https://nodejs.org)
+[![powered by Jev](https://img.shields.io/badge/powered%20by-Jev%20(System%20One)-orange)](https://github.com/tamaratran/fast-jev-compaction)
+
 **A Jev-powered skill router & security auditor for any AI agent** — Codex, Claude Code, OpenCode, Hermes Agent, anything with `SKILL.md` skills.
 
 The problem: agents have dozens of skills, but the model *forgets to use them* — or uses the wrong one. jev-skill-router sends ONE cheap Jev (System One) decision request per user request and returns a short instruction: *which skill to load, how complex the request is, how confident the choice is.*
@@ -14,6 +19,15 @@ Built on the public Jev endpoint (`POST https://openrouter.ai/api/alpha/decision
 npm i -g jev-skill-router
 export OPENROUTER_API_KEY=sk-or-v1-...   # key from env only, never hardcoded
 ```
+
+## Why not just "list skills in AGENTS.md"?
+
+| Approach | Cost / request | Latency | Stays in sync with skill library | Safety scan |
+|---|---|---|---|---|
+| Full skill catalog pasted in AGENTS.md | tokens EVERY request, grows with library | — | manual re-paste | ❌ |
+| "The model remembers" (system prompt) | tokens, degrades with 100+ skills | — | ❌ model forgets | ❌ |
+| LLM call to route | $0.01–0.10 | 3–10 s | manual | ❌ |
+| **jev-skill-router (Jev)** | **~$0.00002** | **~0.5–1.5 s** | **auto (reads SKILL.md dirs)** | **✅ built-in** |
 
 ## Use
 
@@ -30,8 +44,10 @@ jev-skill-router --init codex        # codex | claude | opencode | hermes | gene
 # See what skill libraries it discovered:
 jev-skill-router --list
 
-# Install skills from any GitHub repo (looks for SKILL.md files recursively):
-jev-skill-router --install anthropics/skills
+# Install skills from any GitHub repo + security-audit them in one step:
+jev-skill-router --install anthropics/skills --scan
+# → {"installed":20,...}
+# → # security scan: 54 skills → unsafe=0, review=0 (report: ./skills-security-report.json)
 
 # Security-audit discovered skills (prompt injection + dangerous commands):
 jev-skill-router --scan --dir .jev-skill-router
@@ -71,9 +87,10 @@ Verdict: `TRUSTED` (both LOW) / `REVIEW` (any MEDIUM) / `UNSAFE` (any HIGH) / `U
 
 ## Verified on a real setup
 
-- 159 skills discovered from 3 agent skill dirs in <1 s.
+- 213 skills discovered from 3 agent skill dirs + external library in <1 s.
 - Request in Russian → correct skill `deep-researcher`, 1.1 s, ~$0.00002.
-- Planted malicious skill (jailbreak + `curl | bash`) → flagged `UNSAFE` (p_inj HIGH, cmds HIGH); 16 clean Anthropic sample skills → `TRUSTED`.
+- `--install mattpocock/skills` → 38 skills; `--install anthropics/skills` → 20 skills.
+- Planted malicious skill (jailbreak + `curl | bash`) → flagged `UNSAFE` (p_inj HIGH, cmds HIGH); 54 clean skills from Anthropic & mattpocock → `TRUSTED`.
 
 ## Fail-open philosophy
 

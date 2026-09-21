@@ -18,7 +18,7 @@
  * override for skill discovery).
  */
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync } from 'node:fs';
-import { join, basename, dirname } from 'node:path';
+import { join, basename, dirname, delimiter } from 'node:path';
 import { homedir } from 'node:os';
 
 const API = 'https://openrouter.ai/api/alpha/decisions';
@@ -55,7 +55,7 @@ function* walkMd(dir, depth = 0) {
 function discoverSkills() {
   const override = process.env.JEV_SKILL_DIRS;
   const dirs = override
-    ? override.split(require('node:path').delimiter)
+    ? override.split(delimiter)
     : [
         join(homedir(), '.claude', 'skills'),
         join(homedir(), '.codex', 'skills'),
@@ -170,10 +170,21 @@ if (flag === '--list') {
 if (flag === '--install') {
   try {
     const spec = argv[1];
-    if (!spec) { console.log('Usage: jev-skill-router --install owner/repo[ /ref]'); process.exit(1); }
+    if (!spec) { console.log('Usage: jev-skill-router --install owner/repo[/ref] [--scan]'); process.exit(1); }
     const installed = await installFromGithub(spec);
     console.log(JSON.stringify({ installed: installed.length, skills: installed }, null, 2));
-    console.log(`\n# Next: run --scan --dir ${join(homedir(), '.jev-skill-router', 'library')} to security-audit them`);
+    if (argv.includes('--scan')) {
+      const lib = await discoverSkills();
+      const targets = lib.filter((s) => s.file.includes(join(homedir(), '.jev-skill-router', 'library')));
+      const verdicts = await auditSkills(targets);
+      const unsafe = verdicts.filter((v) => v.verdict === 'UNSAFE').length;
+      const review = verdicts.filter((v) => v.verdict === 'REVIEW').length;
+      writeFileSync(join(process.cwd(), 'skills-security-report.json'), JSON.stringify({ scanned: verdicts.length, unsafe, review, verdicts }, null, 2));
+      console.log(`# security scan: ${verdicts.length} skills → unsafe=${unsafe}, review=${review} (report: ./skills-security-report.json)`);
+      if (unsafe) process.exitCode = 2; // signal: installed library contains UNSAFE skills
+    } else {
+      console.log(`\n# Next: --scan --dir ${join(homedir(), '.jev-skill-router', 'library')} (or add --scan to install in one step)`);
+    }
   } catch (e) { console.error('install failed:', e.message); process.exit(1); }
   process.exit(0);
 }
