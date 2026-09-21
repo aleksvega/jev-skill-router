@@ -107,7 +107,7 @@ async function installFromGithub(spec) {
   const [owner, repo, ...rest] = spec.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').split('/');
   const ref = rest[0] || 'HEAD';
   const tree = await ghJson(`https://api.github.com/repos/${owner}/${repo}/git/trees/${ref}?recursive=1`);
-  const files = tree.tree.filter((t) => t.type === 'blob' && /SKILL\.md$/i.test(t.path) && !t.path.includes('node_modules'));
+  const files = tree.tree.filter((t) => t.type === 'blob' && /(^|\/)SKILL\.md$/i.test(t.path) && !t.path.includes('node_modules'));
   if (!files.length) throw new Error('no SKILL.md files found in that repo');
   const outDir = join(homedir(), '.jev-skill-router', 'library');
   const installed = [];
