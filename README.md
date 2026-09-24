@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/jev-skill-router.svg)](https://www.npmjs.com/package/jev-skill-router)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen.svg)](https://nodejs.org)
-[![powered by Jev](https://img.shields.io/badge/powered%20by-Jev%20(System%20One)-orange)](https://github.com/tamaratran/fast-jev-compaction)
+[![powered by Jev](https://img.shields.io/badge/powered%20by-Jev%20(System%20One)-orange)](https://github.com/aleksvega/fast-jev-compaction)
 
 **A Jev-powered skill router & security auditor for any AI agent** — Codex, Claude Code, OpenCode, Hermes Agent, anything with `SKILL.md` skills.
 
