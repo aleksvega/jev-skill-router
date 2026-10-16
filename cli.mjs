@@ -14,15 +14,18 @@
  * Output JSON: { complexity, use_skill, skill_name, instruction, confidence, cost_hint }
  * Fail-open philosophy: on any error prints { use_skill: false } and exits 0.
  *
- * Env: OPENROUTER_API_KEY (required), JEV_SKILL_DIRS (optional, path.sep-separated
+ * Env: OPENROUTER_API_KEY (default key), JEV_API_KEY (any provider override),
+ * JEV_BASE_URL (endpoint override; defaults to the OpenRouter decisions API),
+ * JEV_MODEL (model override), JEV_SKILL_DIRS (optional, path.sep-separated
  * override for skill discovery).
  */
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync } from 'node:fs';
 import { join, basename, dirname, delimiter } from 'node:path';
 import { homedir } from 'node:os';
 
-const API = 'https://openrouter.ai/api/alpha/decisions';
-const MODEL = 'typesafe/jev-1.13';
+const API = process.env.JEV_BASE_URL || 'https://openrouter.ai/api/alpha/decisions';
+const MODEL = process.env.JEV_MODEL || 'typesafe/jev-1.13';
+const API_KEY = process.env.JEV_API_KEY || process.env.OPENROUTER_API_KEY || process.env.TYPESAFE_API_KEY;
 const MAX_SKILLS = 60; // Jev choice works best under ~60 options
 
 // ---------- skill discovery ----------
@@ -84,11 +87,10 @@ function discoverSkills() {
 
 // ---------- Jev ----------
 async function jev(state, questions) {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) throw new Error('OPENROUTER_API_KEY is not set');
+  if (!API_KEY) throw new Error('no API key: set OPENROUTER_API_KEY (default), TYPESAFE_API_KEY, or JEV_API_KEY for a custom provider');
   const res = await fetch(API, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: MODEL, state, questions }),
   });
   if (!res.ok) throw new Error(`Jev HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`);

@@ -20,6 +20,8 @@ npm i -g jev-skill-router
 export OPENROUTER_API_KEY=sk-or-v1-...   # key from env only, never hardcoded
 ```
 
+**Any provider, OpenRouter by default:** besides `OPENROUTER_API_KEY` (default), every Jev call also accepts `JEV_API_KEY` (any provider's key), `JEV_BASE_URL` (decisions-endpoint override) and `JEV_MODEL` (model override). `TYPESAFE_API_KEY` is still honored for the official TypeSafe API. Point `JEV_BASE_URL` at any SystemOne-compatible adapter (for example a local bridge to your own relay) and set `JEV_API_KEY` — nothing else changes.
+
 ## Why not just "list skills in AGENTS.md"?
 
 | Approach | Cost / request | Latency | Stays in sync with skill library | Safety scan |
